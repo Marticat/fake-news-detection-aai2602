@@ -1,0 +1,36 @@
+erDiagram
+    subjects ||--o{ articles : categorizes
+    articles ||--o{ predictions : receives
+    experiments ||--o{ predictions : produces
+    subjects {
+        int subject_id PK
+        text name UK
+    }
+    articles {
+        int article_id PK
+        int subject_id FK
+        text title
+        text text
+        text clean_text
+        text date
+        int label
+        text text_hash UK
+        text split
+        int word_count
+    }
+    experiments {
+        text model PK
+        text config_json
+        real validation_f1
+        real test_f1
+        real fit_seconds
+        real predict_seconds
+        real peak_rss_mib
+        real model_mib
+    }
+    predictions {
+        text model PK,FK
+        int article_id PK,FK
+        int predicted
+        real probability_fake
+    }
