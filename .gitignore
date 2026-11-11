@@ -5,3 +5,5 @@ data/raw/
 runs/
 .pytest_cache/
 *.zip
+qa/
+validation_tests.txt

@@ -129,15 +129,11 @@ CSV-таблицы и метрики содержат `dataset_kind` и `run_id`
 
 ## GitHub и Moodle
 
-Создайте репозиторий в своём аккаунте и загрузите исходники; можно через интерфейс GitHub или команды ниже. Учётная запись GitHub здесь не подключена, поэтому удалённый репозиторий автоматически не создан.
+Репозиторий проекта: https://github.com/Marticat/fake-news-detection-aai2602 (приватный). Для работы на другом компьютере:
 
 ```bash
-git init
-git add .
-git commit -m "Add reproducible fake news detection project"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/fake-news-detection.git
-git push -u origin main
+git clone https://github.com/Marticat/fake-news-detection-aai2602.git
+cd fake-news-detection-aai2602
 ```
 
 После реального запуска добавьте в репозиторий небольшие таблицы метрик/графики/документы из нужного run, сохранив `run.json` и `data_manifest.json`. Не загружайте большие CSV, базу или модели обычным Git: в задании разрешена ссылка на данные. `runs/` исключён из Git по умолчанию, чтобы случайно не опубликовать полный корпус.

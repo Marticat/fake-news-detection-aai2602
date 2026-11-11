@@ -11,4 +11,4 @@ FAKE NEWS DETECTION | AAI-2602
 После реального запуска новые Report.pdf и Presentation.pdf появятся в новой папке runs/.
 MiniLM: установить requirements-embeddings.txt и добавить --include-minilm.
 Весь проект протестирован для четырёх офлайн-моделей. MiniLM в этой среде не выполнялся.
-GitHub-репозиторий нужно создать в своём аккаунте; команды приведены в README.
+GitHub: https://github.com/Marticat/fake-news-detection-aai2602 (приватный).
