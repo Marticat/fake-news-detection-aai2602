@@ -1,51 +1,35 @@
-# Шпаргалка для защиты
+# Notes for the defence
 
-## Сценарий на 5-7 минут
-1. Цель: сравнить представления текста для бинарной классификации английских новостей, сохранив единый классификатор.
-2. Данные: показать фактический manifest реального запуска, классы, пропуски, дубликаты и объём. Не цитировать размер из памяти.
-3. Архитектура: data -> SQLite -> train/validation/test -> модели -> метрики, SQL и отчёт.
-4. Объяснить baseline, BoW, TF-IDF, LSA; при выполненном дополнительном режиме - MiniLM.
-5. Показать comparison.csv и выбор модели по validation, затем test. Объяснить trade-off качества, времени и памяти.
-6. Открыть SQL: JOIN ошибок с текстами, CTE ошибок по категориям и ROW_NUMBER внутри категорий.
-7. Показать несколько реальных ошибок. Ввести английскую новость. Завершить ограничениями, не обещая фактчекинг.
+## What changed from the original demo
 
-## Ключевые ответы
+The research now uses the downloaded ISOT corpus: 44,898 input articles, 38,313 after cleaning. The original 240 synthetic rows remain only a software-test fixture. Their perfect scores are not research findings.
 
-**Почему Logistic Regression?** Простой воспроизводимый классификатор для разреженных текстовых признаков. Один классификатор позволяет сравнивать главным образом представления, хотя preprocessing и размерность тоже меняются.
+## Explain the result carefully
 
-**BoW?** Частоты слов/биграмм. В нашем варианте L2-нормализация уменьшает влияние длины документа.
+The model predicts the label assigned by this historical dataset. It does not consult evidence about an individual claim. High held-out quality can reflect topic and publisher style. A deliberate subject-only diagnostic achieves 1.0 macro-F1, demonstrating complete category-label confounding in this test partition. Subject/date are not model features, but text can indirectly encode the same distinctions.
 
-**TF-IDF?** Частота термина с поправкой на его распространённость в обучающем корпусе. Частые почти во всех документах слова получают меньший вес. IDF нельзя обучать на test.
+## Why the split is stronger
 
-**LSA?** TruncatedSVD сжимает разреженный TF-IDF в плотный вектор до 128 компонент. Это латентно-семантическое представление, не pretrained transformer. Минус: линейность и обучение семантики только из данного корпуса.
+Exact normalized-body duplicates are removed before splitting. Identical long titles and identical long body prefixes define connected families. Entire families go to one partition, preventing detected versions of the same story from appearing in both train and test. This heuristic is conservative, not perfect paraphrase detection.
 
-**MiniLM?** Предобученный замороженный энкодер. Длинные документы делятся на токеновые части; векторы частей усредняются и нормализуются. Веса не дообучаются, обучается только Logistic Regression. Это медленнее и требует скачанных весов.
+## Why validation and test differ
 
-**Baseline?** Всегда выдаёт самый частый класс train. Даёт нижнюю точку сравнения: высокий accuracy сам по себе не означает полезную модель.
+Train fits vocabulary and models. Validation selects the method. Test reports final quality. Selecting by the highest test score would bias the estimate. The main split is seed 42; seeds 7, 21 and 84 are additional sensitivity checks. The temporal test uses later articles from the same corpus, not independent external news.
 
-**Macro-F1?** F1=(2*precision*recall)/(precision+recall) отдельно для каждого класса; macro-F1 - среднее этих двух F1. Классы получают равный вес.
+## What E5 contributes
 
-**False positive?** Реальная статья, ошибочно признанная fake. **False negative?** Fake, ошибочно признанная real. В нашем коде fake=1.
+E5 is a frozen pretrained transformer. It converts the first 128 tokens into a 384-dimensional vector using masked mean pooling and L2 normalization. Logistic regression learns labels from those vectors. LSA is a separate linear representation learned from training TF-IDF; it is not a neural transformer. E5 weights are external to the saved classifier.
 
-**Почему три выборки?** Train обучает параметры и представления; validation выбирает метод; test оценивает финальное качество. Повторное изменение настроек по test превращает его в validation.
+## Metrics in plain language
 
-**Как защищаемся от утечки?** Удаляем точные дубликаты нормализованного тела до split, исключаем конфликтующие метки, не подаём subject/date/source, удаляем Reuters, fit словаря/IDF/SVD только на train. Near-duplicates и исторический source bias полностью не устранены.
+Accuracy: fraction correct. Precision(fake): among flagged articles, fraction labelled fake. Recall(fake): among fake-labelled articles, fraction detected. Macro-F1 gives equal weight to real and fake class F1. ROC-AUC measures score ranking. The bootstrap interval measures uncertainty from resampling test articles conditional on the trained model; it is not a guarantee for future publishers.
 
-**Почему 99% может быть подозрительно?** Модель может различать источники, шаблоны и темы; это не равнозначно проверке фактов. Нужно внешнее и временное тестирование. Идеальные результаты на синтетической демонстрации не интерпретируются как научные.
+## SQL demonstration
 
-**Зачем SQL?** Единая связанная база статей, категорий, запусков моделей и предсказаний; аналитика без повторного вычисления признаков. Внешние ключи предотвращают предсказания для несуществующих статей/моделей.
+Open main.py, choose SQL export, and inspect query 08 (subject errors). Explain JOIN from predictions through articles to subjects, GROUP BY and errors/n. Show query 05 ROW_NUMBER and query 09 SUM OVER. Explain foreign keys and why predictions have composite key (model, article_id).
 
-**Почему такие таблицы?** Одна subject имеет много articles. Одна article имеет много predictions от разных experiments. Составной ключ (model, article_id) запрещает повторный прогноз одной модели на одну статью в рамках запуска.
+## Honest remaining issues
 
-**Что измеряет память?** Примерный максимальный RSS процесса каждые 20 мс, включая Python и данные. Каждый production benchmark выполняется в отдельном процессе. Это не гарантированный абсолютный пик и не GPU-память.
+The source is a public ISOT mirror, with exact file hashes, not a verified byte-identical download of the requested Kaggle archive. The selected corpus is under the recommended size: obtain the instructor's agreement rather than inflating files. External publisher validation is still absent. Grouping misses some paraphrases; E5 truncates long articles. CPU timing is descriptive and affected by thread settings/concurrent activity.
 
-**Что делать, если данных меньше нормы?** Показать фактические байты и строки. Условие альтернативное: 500k строк или 200 MB. Если оба ниже - согласовать исключение для указанного преподавателем набора; не дублировать данные искусственно.
-
-## Предлагаемое распределение подготовки
-Это план распределения, а не утверждение о уже выполненном личном вкладе.
-- Kurmet Adilzhan: интеграция модулей, интерфейс и демонстрация.
-- Tolegenov Nursultan: схема БД, SQL и анализ качества данных.
-- Issakulov Zeiin: модели, метрики, анализ ошибок и интерпретация.
-- Всем: проверить код, воспроизвести реальный запуск, прочитать отчёт и объяснять чужие модули на базовом уровне.
-
-Перед сдачей замените формулировку планируемого распределения в reporting.py фактическим вкладом команды и пересоздайте документы.
+Each team member must record what they actually did. Proposed tasks are not evidence of completed individual contributions.
