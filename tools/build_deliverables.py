@@ -71,6 +71,7 @@ p('Accuracy, fake-class precision/recall, macro-F1 and ROC-AUC are measured on t
 table([['Model','Val F1','Test F1','Accuracy','95% F1 interval']]+[[r['model'],f"{r['validation']['macro_f1']:.4f}",f"{r['test']['macro_f1']:.4f}",f"{r['test']['accuracy']:.4f}",f"{r['macro_f1_ci']['low']:.4f}–{r['macro_f1_ci']['high']:.4f}"] for r in metrics],[65,80,80,80,205])
 table([['Model','Fit seconds','Test inference s','Peak RSS MiB','Model MiB']]+[[r['model'],f"{r['fit_seconds']:.2f}",f"{r['predict_seconds']:.2f}",f"{r['peak_rss_mib']:.1f}",f"{r['model_mib']:.2f}"] for r in metrics],[65,105,115,115,110])
 p('RSS samples the entire worker every 20 ms, including Python and data; short peaks may be missed. E5 fit and inference include encoding, while its saved joblib excludes external encoder weights (470.64 MB).')
+
 page()
 h('5. Robustness checks')
 p('Three additional group splits (seeds 7, 21 and 84) rerun the baseline and lexical models from scratch. These are sensitivity analyses with overlapping data, not independent external datasets. They do not replace the primary validation-selected model. Neural repeated-split evaluation was not executed because of CPU cost.')
@@ -88,10 +89,10 @@ p(f'The validation-selected {best["model"].upper()} makes {len(errors)} errors a
 table([['Actual / predicted','Real','Fake'],['Real',*cm[0]],['Fake',*cm[1]]],[230,140,140])
 p('The examples below are the highest-confidence mistakes of each type. Scores are model outputs, not calibrated truth probabilities. Labels and titles are reproduced for auditing; this report does not independently endorse the underlying claims.')
 for kind in ('false_positive','false_negative'):
-    for r in errors[errors.error_type==kind].head(2).itertuples():
+    for r in errors[errors.error_type==kind].head(1).itertuples():
         p(f'{kind.replace("_"," ").title()} · article {r.article_id} · P(fake)={r.probability_fake:.3f}','Heading3')
         p(escape(str(r.title)))
-        p('Subject: '+escape(str(r.subject))+'. '+escape(str(r.text)[:380])+'…')
+        p('Subject: '+escape(str(r.subject))+'. '+escape(str(r.text)[:220])+'…')
 p('Interpretation: shared political vocabulary and overlapping reporting styles can confuse a word-based classifier. Short or unusual articles provide little evidence. These are hypotheses suggested by examples; they are not causal explanations. Full error CSVs, term weights and subject/length error summaries support further inspection.')
 if best['model']=='tfidf':
     p('The Romney example (10471) is a full speech transcript rather than ordinary third-person reporting; its first-person political rhetoric is a plausible style-related false-positive trigger. The North Korea example (31797) uses conventional event reporting and attribution to KCNA despite its fake-file label, which can explain resemblance to the real-labelled class. The photo retrospective (12402) mixes many topics and personal accounts. These examples motivate publisher-held-out validation and label review; the model score alone cannot resolve whether any underlying claim is true.')
@@ -102,8 +103,12 @@ from newscheck.reporting import make_er
 make_er(RUN/'er_diagram.png')
 story.append(RLImage(str(RUN/'er_diagram.png'),width=510,height=255))
 p('SQLite tables: subjects, articles, experiments and predictions. Foreign keys connect each article to a subject and every prediction to an article and an experiment. Ten queries cover class balance, subject GROUP BY/HAVING, monthly counts, an average-length subquery, a CTE with ROW_NUMBER, model errors by JOIN, confusion counts, subject error rates, cumulative SUM OVER and validation DENSE_RANK. Results are loaded into Pandas and exported as CSV.')
+page()
 h('8. Conclusions and limitations')
 p(f'{best["model"].upper()} is selected by primary validation macro-F1. The trained text models improve on the majority baseline on this corpus. The real-data experiment replaces the earlier synthetic demonstration and produces nonzero errors that can be inspected. High scores remain compatible with source/style shortcuts and should not be interpreted as general fact-checking accuracy.')
+neural=next((r for r in metrics if r['model']=='e5'),None)
+if neural:
+    p(f'In this execution, E5 obtains test macro-F1 {neural["test"]["macro_f1"]:.4f}, compared with {best["test"]["macro_f1"]:.4f} for the validation-selected {best["model"].upper()}. Neural fit takes {neural["fit_seconds"]:.1f} seconds including encoding. Thus the frozen neural pipeline does not justify its extra runtime here. Truncation, a frozen general-purpose representation and strong lexical dataset cues are plausible explanations, not established causes. This result does not show that embeddings are universally worse.')
 p('Remaining limitations: historical English data, no independent publisher-held-out external test, heuristic near-duplicate detection, truncated E5 input, one hardware environment, conditional bootstrap intervals and a corpus below the recommended volume. Additional corpora should be deduplicated against ISOT before external evaluation.')
 table([['Diagnostic (not candidate models)','Test macro-F1']]+[[r['check'],f"{r['macro_f1']:.4f}"] for r in audit],[370,140])
 p('A subject-only diagnostic learns each subject’s training fake-label frequency. High diagnostic performance reveals label/category confounding, which can also be reflected indirectly in text. Subject is never an input to the deployed classifiers. The title-only and body-only TF-IDF ablations use the same primary split and fixed settings; they are diagnostic, not additional model-selection trials.')
@@ -215,7 +220,7 @@ for i,r in enumerate(metrics):
 text('E5: 4 CPU threads; lexical workers: 1. Background work affects timings.',64,580,1150,23,orange)
 text('These are observed execution costs, not a controlled hardware benchmark.',64,620,1150,21,muted);end()
 
-start('10 / Database','Every prediction remains traceable')
+start('11 / Database','Every prediction remains traceable')
 def entity(x,y,title,fields):
     rect(x,y,440,45,teal);text(title,x+16,y+8,410,23,paper,'Bold');rect(x,y+45,440,97,pale);text(fields,x+16,y+61,410,22)
 entity(64,200,'subjects','PK subject_id<br/>name');entity(64,430,'articles','PK article_id · FK subject_id<br/>text · label · split · hash')
@@ -224,18 +229,18 @@ for x in (284,996):line(x,342,x,430,teal,3)
 line(504,500,776,500,teal,3);text('1 : many',565,460,180,22,teal)
 note('10 SQL queries: JOIN, GROUP BY/HAVING, subquery, CTE and window functions.');end()
 
-start('11 / Reproduce','A complete run leaves auditable evidence')
+start('12 / Reproduce','A complete run leaves auditable evidence')
 for i,(a,b) in enumerate([('Input','CSV hashes<br/>Cleaning manifest'),('Models','Saved classifiers<br/>Pinned neural weights'),('Analysis','Predictions and errors<br/>SQL and robustness CSVs'),('Deliver','Written report<br/>Editable presentation')]):
     x=64+i*295;text(str(i+1).zfill(2),x,220,260,45,teal,'Serif');text(a,x,300,270,29,ink,'Bold');text(b,x,355,270,24)
 rect(64,485,1152,72,ink);text('python main.py run --raw data/raw --include-e5',85,506,1110,25,paper)
 text('python -m newscheck.robustness --run runs/RUN_ID',64,608,1150,24);end()
 
-start('12 / Conclusions','Useful evidence, with a defined scope',True)
+start('13 / Conclusions','Useful evidence, with a defined scope',True)
 text('Established',64,210,530,36,'#91C6BD','Serif');text('Real-data training and test results<br/>Neural embeddings executed<br/>Nonzero errors inspected<br/>Split and temporal sensitivity measured',64,285,540,27,paper)
 text('Still limited',690,210,510,36,'#D9A45F','Serif');text('Historical source and topic biases<br/>No independent external corpus<br/>Heuristic duplicate families<br/>128-token neural input budget',690,285,530,27,paper)
 text('Before submission: approve the dataset-size exception<br/>and record each member’s actual contribution.',64,550,1150,28,paper);end()
 
-start('13 / Sources','Data, implementation and image credits')
+start('14 / Sources','Data, implementation and image credits')
 for y,a,b in [(205,'Repository','github.com/Marticat/fake-news-detection-aai2602'),(285,'Corpus','ISOT · emilurosev/isot-fake-news-dataset<br/>Requested data card: Kaggle / Clement Bisaillon'),(390,'Methods','scikit-learn · SQLite · intfloat/multilingual-e5-small'),(475,'Photography','Mr Cup / Fabien Barral on Unsplash<br/>unsplash.com/photos/Mwuod2cm8g4')]:
     text(a,64,y,260,25,teal,'Bold');text(b,350,y,850,23)
 text('All charts use the saved real-data run. Full references and hashes are in the report.',64,605,1150,23,orange)
