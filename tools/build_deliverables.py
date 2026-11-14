@@ -93,6 +93,8 @@ for kind in ('false_positive','false_negative'):
         p(escape(str(r.title)))
         p('Subject: '+escape(str(r.subject))+'. '+escape(str(r.text)[:380])+'…')
 p('Interpretation: shared political vocabulary and overlapping reporting styles can confuse a word-based classifier. Short or unusual articles provide little evidence. These are hypotheses suggested by examples; they are not causal explanations. Full error CSVs, term weights and subject/length error summaries support further inspection.')
+if best['model']=='tfidf':
+    p('The Romney example (10471) is a full speech transcript rather than ordinary third-person reporting; its first-person political rhetoric is a plausible style-related false-positive trigger. The North Korea example (31797) uses conventional event reporting and attribution to KCNA despite its fake-file label, which can explain resemblance to the real-labelled class. The photo retrospective (12402) mixes many topics and personal accounts. These examples motivate publisher-held-out validation and label review; the model score alone cannot resolve whether any underlying claim is true.')
 page()
 h('7. Database and architecture')
 p('The project separates data ingestion, models, worker measurement, orchestration, SQL, uncertainty checks and reporting into Python modules. The CLI provides loading/training, classification, SQL export, report generation and a synthetic software test. Error handling reports missing files, invalid schemas, insufficient samples and incomplete runs.')
