@@ -12,13 +12,13 @@ class E5Embedding(BaseEstimator,TransformerMixin):
     def _load(self):
         if hasattr(self,'encoder_'):
             return
-        import torch
-        from transformers import AutoModel,AutoTokenizer
         revision='614241f622f53c4eeff9890bdc4f31cfecc418b3'
         local=Path.home()/'.cache/huggingface/hub/models--intfloat--multilingual-e5-small/snapshots'/revision
         source=getattr(self,'source_',None)
         if source is None or (source!='intfloat/multilingual-e5-small' and not Path(source).exists()):
             source=os.environ.get('NEWSCHECK_E5_PATH',str(local) if local.exists() else 'intfloat/multilingual-e5-small')
+        if hasattr(self,'encoder_fingerprint_') and not Path(source).exists():
+            raise ValueError('Restore the pinned E5 files locally and set NEWSCHECK_E5_PATH so their identity can be verified.')
         if Path(source).exists():
             from .data import file_hash
             names=('model.safetensors','config.json','tokenizer.json','tokenizer_config.json','special_tokens_map.json')
@@ -28,6 +28,8 @@ class E5Embedding(BaseEstimator,TransformerMixin):
             self.encoder_fingerprint_=fingerprint
         self.source_=source
         self.revision_=revision
+        import torch
+        from transformers import AutoModel,AutoTokenizer
         kwargs={} if Path(source).exists() else {'revision':revision}
         torch.set_num_threads(4)
         self.tokenizer_=AutoTokenizer.from_pretrained(source,**kwargs)
