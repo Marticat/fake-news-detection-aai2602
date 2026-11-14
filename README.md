@@ -1,150 +1,94 @@
-# Fake News Detection - AAI-2602
+# Fake News Detection — AAI-2602
 
-**Kurmet Adilzhan, Tolegenov Nursultan, Issakulov Zeiin**  
+Kurmet Adilzhan · Tolegenov Nursultan · Issakulov Zeiin  
 Programming for Data Analysis and Database | Applied Artificial Intelligence
 
-Python-проект: обработка новостей, SQLite, 10 SQL-запросов, четыре подхода к классификации, анализ ошибок, консольное меню и автоматически обновляемые PDF-отчёт/презентация.
+A modular Python project combining news-text classification, SQLite analytics and reproducible evaluation. The current research execution uses real ISOT CSV files, not the earlier synthetic software fixture.
 
-## Статус поставки
+## Run
 
-Код проверен на **синтетическом наборе для тестирования программы**. Файлы Kaggle не включены: скачать их в среде разработки не удалось, сайт запросил вход. Приложенные PDF демонстрируют выполненный тестовый запуск, **не являются результатами исследования на Kaggle и не готовы к сдаче как такое исследование**. После загрузки реальных CSV команда ниже создаёт отдельную базу, обученные модели, настоящие метрики, графики, отчёт и презентацию. Никакие числа качества не выдуманы.
-
-## Быстрый запуск (Python 3.10 или новее)
-
-Откройте терминал в папке, где расположен `main.py`.
+Python 3.10+:
 
 ```bash
 python -m venv .venv
-```
-
-Windows PowerShell: `.venv\Scripts\Activate.ps1`  
-Windows CMD: `.venv\Scripts\activate.bat`  
-macOS/Linux: `source .venv/bin/activate`
-
-```bash
+# Windows: .venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
 python -m pip install -r requirements.txt
 python main.py
 ```
 
-Если активация PowerShell запрещена, используйте `.venv\Scripts\python.exe` вместо `python` без изменения системных политик.
+The interactive menu supports training, classification, SQL export and document generation. For a quick software-only test: `python main.py run --demo`.
 
-Меню: 1 - обучение на CSV; 2 - демонстрация; 3 - классификация; 4 - SQL-анализ; 5 - обновление PDF; 0 - выход.
+## Data
 
-## Реальный эксперимент
+Requested source: https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset
 
-1. Скачать и распаковать датасет: https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset
-2. Поместить `Fake.csv` и `True.csv` в `data/raw/`. Ожидаемые колонки: `title,text,subject,date`.
-3. Выполнить:
+Executed public ISOT mirror: https://github.com/emilurosev/isot-fake-news-dataset/tree/aa8ca45d9da5a308479c52d121c42f36a1f97e69
+
+Download `True.csv` and `Fake.csv` with the GitHub **Download raw file** button; put them in `data/raw/`. See [docs/SOURCE.md](docs/SOURCE.md) for provenance. The executed files contain 44,898 rows and 116,372,816 bytes; after 715 empty bodies and 5,870 repeated bodies are removed, 38,313 articles remain. Hashes are stored in every run's `data_manifest.json`. Byte identity against the requested Kaggle archive was not verified.
+
+This selected corpus is below the recommended 500,000 rows or 200 MB. An instructor-approved exception remains necessary if that recommendation is enforced. No artificial duplication is used to inflate volume. Raw data and model weights are not committed; use the source links and applicable source licenses.
+
+## Research execution
 
 ```bash
 python main.py run --raw data/raw
+# Frozen neural representation (additional dependencies and pretrained weights):
+python -m pip install torch transformers
+python main.py run --raw data/raw --include-e5
+python -m newscheck.robustness --run runs/RUN_ID
+python -m newscheck.audit --run runs/RUN_ID
+python main.py predict --run runs/RUN_ID --text "An English news article to classify"
 ```
 
-Альтернатива загрузки при настроенном Kaggle API:
+E5 uses `intfloat/multilingual-e5-small`, pinned revision `614241f622f53c4eeff9890bdc4f31cfecc418b3`. A fresh machine downloads the encoder from Hugging Face. Set `NEWSCHECK_E5_PATH` to a local pretrained model directory for offline execution. The joblib classifier does **not** bundle neural weights. Optional MiniLM remains available with `--include-minilm` and `requirements-embeddings.txt`.
 
-```bash
-python -m pip install kaggle
-kaggle datasets download -d clmentbisaillon/fake-and-real-news-dataset -p data/raw --unzip
-```
-
-Учётные данные Kaggle настраиваются по официальной документации; токены нельзя помещать в GitHub. На странице датасета указана лицензия CC BY-NC-SA 4.0: сохраняйте атрибуцию и проверьте условия перед распространением самих данных. Репозиторий содержит ссылку, а не исходные статьи.
-
-## BoW, TF-IDF и embeddings
-
-| Метод | Представление | Классификатор |
+| Method | Representation | Classifier |
 |---|---|---|
-| baseline | Нет текстовых признаков | Most-frequent DummyClassifier |
-| bow | Частоты 1-2-грамм, L2-нормализация | Logistic Regression |
-| tfidf | TF-IDF 1-2-грамм, sublinear TF | Logistic Regression |
-| lsa | TF-IDF -> TruncatedSVD, до 128 измерений -> L2 | Logistic Regression |
-| minilm (дополнительно) | Замороженный all-MiniLM-L6-v2, усреднение чанков | Logistic Regression |
+| Baseline | No text features | Most frequent training class |
+| BoW | Word/bigram counts, L2 | Logistic Regression |
+| TF-IDF | Sublinear TF-IDF word/bigrams | Logistic Regression |
+| LSA | TF-IDF, up to 128 SVD dimensions, L2 | Logistic Regression |
+| E5 | Frozen 384-dimensional neural vectors | Logistic Regression |
 
-**LSA - плотные латентно-семантические эмбеддинги, а не нейросеть и не pretrained transformer.** Они обучаются только на train. В таблицах названия различаются. Если преподаватель подразумевает под embeddings именно нейросетевые представления, запускайте MiniLM:
+E5 uses a query prefix, masked mean pooling, L2 normalization, batches of 16 and the first 128 tokenizer tokens. Lexical methods use full cleaned text. This is a comparison of practical pipelines with different input budgets. The neural encoder is not fine-tuned on news labels.
+
+## Evaluation safeguards
+
+- Exact normalized bodies are deduplicated before splitting; contradictory labels are excluded.
+- Identical normalized titles of at least six words, or identical 80-word prefixes in bodies of at least 100 words, define connected duplicate families. Detected families never cross partitions. This is not exhaustive semantic deduplication.
+- GroupShuffleSplit approximates 70/15/15, seed 42. Counts and class composition are observed, not assumed. Synthetic smoke tests use a stratified split.
+- Vocabulary, IDF, SVD and classifier fit on training only. Validation macro-F1 selects the model; test data does not select it.
+- Accuracy, fake precision/recall, macro-F1, ROC-AUC and confusion matrices are exported. Conditional 95% F1 intervals use 1,000 stratified article bootstrap draws.
+- Additional seeds 7/21/84 and an 80th-percentile chronological holdout measure lexical-model sensitivity. Date-spanning families are excluded from the temporal comparison.
+- `audit.json` includes subject-only confounding, title-only and body-only diagnostics. Metadata is never fed to deployed text models.
+
+Remaining scientific limits: historical English corpus, source/topic shortcuts, no independent external publisher test, heuristic families, E5 truncation and conditional rather than full training-uncertainty intervals. Model scores are not calibrated factual-truth probabilities.
+
+## SQL and software structure
+
+`newscheck/data.py` handles chunked ingestion and cleaning; `models.py` and `neural.py` define representations; `worker.py` measures quality/resources; `workflow.py` orchestrates runs; `database.py` implements SQLite; `validation.py`, `robustness.py`, and `audit.py` evaluate uncertainty and sensitivity; `reporting.py` generates PDFs.
+
+Four tables: `subjects`, `articles`, `experiments`, `predictions`. Ten SQL queries include JOIN, GROUP BY/HAVING, subquery, CTE, ROW_NUMBER, SUM OVER and DENSE_RANK. Results load into Pandas and export to CSV. ER diagrams and schema/query sources are included.
+
+CSV reads use 5,000-row chunks, compact label/length types and sparse float32 features. Cleaned text remains in RAM, so training is not out-of-core. Optional Parquet output requires pyarrow. Process RSS is sampled every 20 ms. Core workers use one numerical thread and E5 four; concurrent machine activity affects timings. Saved E5 joblib size excludes its 470.64 MB encoder.
+
+## Verification and outputs
 
 ```bash
-python -m pip install -r requirements-embeddings.txt
-python main.py run --raw data/raw --include-minilm
-```
-
-Первый запуск MiniLM требует интернет для весов; CPU-обработка полного датасета может занимать заметное время. В отчёте явно перечислены реально выполненные модели. При ошибке MiniLM весь запуск помечается `failed`, успешное завершение не имитируется. Скачанные веса кэшируются стандартным механизмом Hugging Face; для офлайн-предсказаний кэш должен сохраниться. Размер файла `.joblib` не включает эти веса.
-
-## Демонстрация и проверка
-
-```bash
-python main.py run --demo
 python -m unittest discover -s tests -v
+python main.py sql --run runs/RUN_ID
+python main.py report --run runs/RUN_ID
 ```
 
-Демонстрация создаёт 240 **искусственных** текстов по шаблонам. Высокие показатели на них проверяют лишь связность программного конвейера. Это не репрезентативная выборка и не доказательство детекции фейков.
+Each run stores manifests, metrics, model files, predictions, real errors, feature coefficients, length diagnostics, SQL CSVs, a SQLite database and charts. Failed runs are marked and rejected for inference. Load only trusted joblib files.
 
-Каждый запуск создаёт новую папку `runs/<UTC timestamp>_<dataset kind>_<id>/`. Скопируйте путь из вывода программы:
+The research report and editable presentation are in `docs/`. Measured tables and provenance are in `results/`; large raw files and trained models are reproduced locally. Earlier synthetic artifacts, if retained in repository history, are software-validation records only.
 
-```bash
-python main.py predict --run "runs/ИМЯ_ПАПКИ" --text "The agency published official figures after the public meeting."
-python main.py sql --run "runs/ИМЯ_ПАПКИ"
-python main.py report --run "runs/ИМЯ_ПАПКИ"
-```
+## Team contribution record
 
-Классификация предназначена для английского текста. Метка - прогноз на основе паттернов датасета; `probability_fake` - некалиброванный модельный балл, не вероятность фактической ложности утверждения. Для проверки конкретной новости нужны источники и фактчекинг. Загружайте только собственные доверенные `.joblib` файлы.
+The three students are project authors. Actual individual contributions must be supplied by the team before submission; no guessed allocation is represented as completed work.
 
-## Что создаёт программа
+## Rebuild designed PDF / PPTX deliverables
 
-- `run.json`: статус, версии библиотек, оборудование ОС, ограничения, выбранная модель, метрики.
-- `data_manifest.json`: реальные размеры CSV, SHA-256, число строк, удалений, классов и частей выборки.
-- `articles.csv`, опционально `articles.parquet`: очищенные записи с идентификаторами и split.
-- `news.db`: SQLite с внешними ключами и индексами.
-- `comparison.csv`, `metrics_*.json`: сравнение качества, времени и RSS.
-- `predictions_*.csv`, `errors_*.csv`, `length_errors_*.csv`: предсказания и анализ ошибок.
-- `terms_*.csv`: коэффициенты слов BoW/TF-IDF, а не причинные объяснения.
-- `sql/`: 10 результатов, исходные запросы и схема SQL.
-- `figures/`: баланс классов, длины текстов, сравнение, confusion matrices, ER-диаграмма.
-- `Report.pdf`, `Presentation.pdf`: автоматически обновлённые документы для этого запуска.
-- `models/`, `worker_*.log`: модели и логи.
-
-CSV-таблицы и метрики содержат `dataset_kind` и `run_id`, чтобы демонстрационные результаты нельзя было спутать с реальными при переносе файла. `artifact_status` обозначает завершённый этап экспорта; актуальный общий статус всего запуска хранится в `run.json`. В тестах проверены четыре офлайн-метода; MiniLM реализован, но в данной среде не запускался из-за отсутствия библиотеки/весов.
-
-## Методология
-
-`0 = real`, `1 = fake`. Пустые тела удаляются. Дубликаты определяются по SHA-256 нормализованного тела **до** разделения. Все группы с противоречивыми метками исключаются. Деление stratified 70/15/15, seed=42; после округления доли могут немного отличаться. Словарь, IDF и SVD обучаются только на train. Subject/date/source не входят в признаки; маркер Reuters удаляется. Настройки фиксированы, поиска гиперпараметров нет. Победитель выбирается по validation macro-F1; test используется для итогового сравнения. При равенстве сохраняется порядок методов. После просмотра test нельзя подбирать настройки на его результатах.
-
-Метрики: accuracy, precision/recall для fake, macro-F1, ROC-AUC. Fit time включает построение представления и классификатора; для MiniLM также первый запуск/загрузку энкодера. Predict time включает векторизацию теста. Одно измерение времени на метод, один seed. Модели запускаются в отдельных процессах с одним вычислительным потоком; RSS измеряется каждые 20 мс и включает интерпретатор и данные. Это приближённый пик процесса, не точный размер модели. Файл модели измеряется отдельно. Сравнение времени MiniLM без прогрева не равно сравнению только алгоритмической скорости.
-
-Чтение CSV использует `chunksize=5000`; метки int8, счётчик слов int32, разреженные матрицы float32 и максимум 30 000 признаков. Полный очищенный текст и словарь дедупликации остаются в RAM: это **не** полностью out-of-core обучение. Parquet сохраняется при установленном pyarrow. Для намного большего корпуса потребуются SQL-дедупликация и incremental learning.
-
-Рекомендуемый порог задания: >=500 000 строк **или** >=200 000 000 байт исходных CSV. Флаг `volume_threshold_met` вычисляется по реальным файлам. При невыполнении порога согласуйте исключение; искусственное дублирование не применяется.
-
-## Архитектура
-
-| Файл | Ответственность |
-|---|---|
-| main.py | CLI и интерактивное меню, обработка ошибок |
-| newscheck/data.py | Чтение, очистка, дедупликация, разбиение, manifest |
-| newscheck/database.py | ER-схема, внешние ключи, SQL, Pandas-экспорт |
-| newscheck/models.py | Baseline, BoW, TF-IDF, LSA и MiniLM |
-| newscheck/worker.py | Обучение, метрики, память, ошибки, сохранение модели |
-| newscheck/workflow.py | Изолированные процессы, run status, выбор модели |
-| newscheck/charts.py | Графики Matplotlib |
-| newscheck/reporting.py | PDF-отчёт, PDF-презентация, ER-диаграмма |
-| tests/ | Проверки ошибок ввода, утечек, SQL и полного процесса |
-
-## GitHub и Moodle
-
-Репозиторий проекта: https://github.com/Marticat/fake-news-detection-aai2602 (приватный). Для работы на другом компьютере:
-
-```bash
-git clone https://github.com/Marticat/fake-news-detection-aai2602.git
-cd fake-news-detection-aai2602
-```
-
-После реального запуска добавьте в репозиторий небольшие таблицы метрик/графики/документы из нужного run, сохранив `run.json` и `data_manifest.json`. Не загружайте большие CSV, базу или модели обычным Git: в задании разрешена ссылка на данные. `runs/` исключён из Git по умолчанию, чтобы случайно не опубликовать полный корпус.
-
-В Moodle загрузите **обновлённые документы реального запуска**, а не приложенные демонстрационные PDF. Срок - за 2-3 дня до вашего экзамена. `docs/defense_notes.md` содержит объяснения и сценарий защиты; распределение вклада в документах предложено для команды и должно соответствовать фактической работе.
-
-## Источники
-
-1. Kaggle data card: https://www.kaggle.com/datasets/clmentbisaillon/fake-and-real-news-dataset
-2. ISOT data README: https://onlineacademiccommunity.uvic.ca/isot/wp-content/uploads/sites/7295/2023/02/ISOT_Fake_News_Dataset_ReadMe.pdf
-3. scikit-learn feature extraction: https://scikit-learn.org/stable/modules/feature_extraction.html
-4. scikit-learn common pitfalls: https://scikit-learn.org/stable/common_pitfalls.html
-5. Sentence Transformers: https://www.sbert.net/docs/sentence_transformer/usage/semantic_textual_similarity.html
-6. SQLite window functions: https://www.sqlite.org/windowfunctions.html
+`python tools/build_deliverables.py runs/RUN_ID` after the main run, robustness and audit are complete. Outputs are in `outputs/Desktop_Delivery/`. The editable PPTX writer is included and needs no PowerPoint installation. Newspaper photograph: Mr Cup / Fabien Barral, https://unsplash.com/photos/Mwuod2cm8g4, Unsplash License.

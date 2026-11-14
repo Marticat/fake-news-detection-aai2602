@@ -46,6 +46,7 @@ def main():
     run.add_argument('--out',default='runs')
     run.add_argument('--demo',action='store_true',help='Synthetic software fixture, not research data')
     run.add_argument('--include-minilm',action='store_true')
+    run.add_argument('--include-e5',action='store_true')
     pred=sub.add_parser('predict')
     pred.add_argument('--run',required=True)
     pred.add_argument('--text',required=True)
@@ -56,7 +57,7 @@ def main():
     try:
         if args.command=='run':
             from newscheck.workflow import run_project
-            run_project(args.raw,args.out,args.demo,args.include_minilm)
+            run_project(args.raw,args.out,args.demo,args.include_minilm,include_e5=args.include_e5)
         elif args.command=='predict':
             from newscheck.workflow import predict_text
             print(json.dumps(predict_text(args.run,args.text),indent=2))

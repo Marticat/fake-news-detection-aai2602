@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 data/raw/
+data/isot/
+outputs/
 runs/
 .pytest_cache/
 *.zip
