@@ -1,6 +1,6 @@
 # Fake News Detection — AAI-2602
 
-Kurmet Adilzhan · Tolegenov Nursultan · Issakulov Zeiin  
+Kurmet Adilzhan · Tolegenov Nursultan · Issakulov Zeiin
 Programming for Data Analysis and Database | Applied Artificial Intelligence
 
 A modular Python project combining news-text classification, SQLite analytics and reproducible evaluation. The current research execution uses real ISOT CSV files, not the earlier synthetic software fixture.
@@ -34,7 +34,7 @@ This selected corpus is below the recommended 500,000 rows or 200 MB. An instruc
 ```bash
 python main.py run --raw data/raw
 # Frozen neural representation (additional dependencies and pretrained weights):
-python -m pip install torch transformers
+python -m pip install -r requirements-e5.txt
 python main.py run --raw data/raw --include-e5
 python -m newscheck.robustness --run runs/RUN_ID
 python -m newscheck.audit --run runs/RUN_ID
@@ -83,7 +83,7 @@ python main.py report --run runs/RUN_ID
 
 Each run stores manifests, metrics, model files, predictions, real errors, feature coefficients, length diagnostics, SQL CSVs, a SQLite database and charts. Failed runs are marked and rejected for inference. Load only trusted joblib files.
 
-The research report and editable presentation are in `docs/`. Measured tables and provenance are in `results/`; large raw files and trained models are reproduced locally. Earlier synthetic artifacts, if retained in repository history, are software-validation records only.
+The research report and editable presentation are in `docs/`. Measured tables and provenance are in `results/`; large raw files and trained models are reproduced locally. Earlier artifacts with DEMO in their filenames are software-validation records only; use the new report and presentation without DEMO for the real experiment.
 
 ## Team contribution record
 

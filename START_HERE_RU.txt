@@ -1,14 +1,21 @@
 FAKE NEWS DETECTION | AAI-2602
 
-1. Установите Python 3.10+ и зависимости: python -m pip install -r requirements.txt
-2. Запустите меню: python main.py
-3. Для проверки работы выберите пункт 2 (искусственные тестовые данные).
-4. Для исследования скачайте Fake.csv и True.csv с Kaggle в data/raw/.
-5. Выполните: python main.py run --raw data/raw
+Проект обновлён на реальном ISOT-датасете: 44 898 исходных статей, 38 313 после очистки.
 
-Полная инструкция: README.md. Шпаргалка: docs/defense_notes.md.
-Приложенные отчёт, презентация и demo_run - демонстрация работы кода, не результаты на Kaggle.
-После реального запуска новые Report.pdf и Presentation.pdf появятся в новой папке runs/.
-MiniLM: установить requirements-embeddings.txt и добавить --include-minilm.
-Весь проект протестирован для четырёх офлайн-моделей. MiniLM в этой среде не выполнялся.
-GitHub: https://github.com/Marticat/fake-news-detection-aai2602 (приватный).
+1. Установить Python 3.10+ и зависимости:
+   python -m pip install -r requirements.txt
+2. Открыть меню: python main.py
+3. Источники CSV и воспроизводимые команды находятся в README.md и docs/SOURCE.md.
+4. Основной запуск: python main.py run --raw data/raw
+5. Для E5: python -m pip install -r requirements-e5.txt
+   python main.py run --raw data/raw --include-e5
+6. Проверки устойчивости: python -m newscheck.robustness --run runs/ИМЯ_ЗАПУСКА
+7. Проверка тематического перекоса: python -m newscheck.audit --run runs/ИМЯ_ЗАПУСКА
+8. Проверка программы: python -m unittest discover -s tests -v
+
+Отчёт и презентация: docs/. Результаты и происхождение данных: results/.
+Шпаргалка для защиты: docs/defense_notes.md.
+
+Синтетический режим --demo нужен только для проверки программы и не является исследованием.
+Объём выбранного корпуса ниже рекомендации задания: требуется согласование исключения с преподавателем.
+Фактический вклад каждого участника должна указать команда.
