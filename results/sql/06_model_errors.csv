@@ -1,0 +1,6 @@
+model,evaluated,errors,accuracy,dataset_kind,run_id,artifact_status
+baseline,5754,2559,0.5553,kaggle,20261114T154147Z_kaggle_62b2ee,sql_exported
+bow,5754,134,0.9767,kaggle,20261114T154147Z_kaggle_62b2ee,sql_exported
+e5,5754,284,0.9506,kaggle,20261114T154147Z_kaggle_62b2ee,sql_exported
+lsa,5754,82,0.9857,kaggle,20261114T154147Z_kaggle_62b2ee,sql_exported
+tfidf,5754,73,0.9873,kaggle,20261114T154147Z_kaggle_62b2ee,sql_exported
