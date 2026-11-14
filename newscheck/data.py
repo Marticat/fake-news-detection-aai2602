@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GroupShuffleSplit
 
 SEED = 42
 
@@ -37,12 +37,20 @@ def split_data(df, seed=SEED):
     counts = df.label.value_counts()
     if len(counts) != 2 or counts.min() < 10:
         raise ValueError('Need at least 10 unique, non-conflicting articles in each class.')
-    train, rest = train_test_split(df.index, test_size=0.30, stratify=df.label, random_state=seed)
-    val, test = train_test_split(rest, test_size=0.50, stratify=df.loc[rest,'label'], random_state=seed)
+    if 'group_id' in df:
+        train_pos, rest_pos = next(GroupShuffleSplit(n_splits=1,test_size=.30,random_state=seed).split(df,groups=df.group_id))
+        rest_df=df.iloc[rest_pos]
+        val_pos,test_pos=next(GroupShuffleSplit(n_splits=1,test_size=.50,random_state=seed).split(rest_df,groups=rest_df.group_id))
+        val,test=rest_df.index[val_pos],rest_df.index[test_pos]
+    else:
+        train, rest = train_test_split(df.index, test_size=0.30, stratify=df.label, random_state=seed)
+        val, test = train_test_split(rest, test_size=0.50, stratify=df.loc[rest,'label'], random_state=seed)
     df = df.copy()
     df['split'] = 'train'
     df.loc[val,'split'] = 'validation'
     df.loc[test,'split'] = 'test'
+    if any(part.label.nunique()!=2 for _,part in df.groupby('split')):
+        raise ValueError('Each partition must contain both labels. Use more independent groups or another predeclared seed.')
     return df
 
 
@@ -88,6 +96,9 @@ def prepare_data(raw_dir, out_dir, chunksize=5000, seed=SEED, dataset_kind='kagg
     df['date'] = parsed.dt.strftime('%Y-%m-%d').where(parsed.notna(), None)
     df['label'] = df.label.astype('int8')
     df['word_count'] = df.word_count.astype('int32')
+    if dataset_kind != 'synthetic_demo':
+        from .validation import duplicate_groups
+        df['group_id']=duplicate_groups(df)
     df = split_data(df, seed)
     df['dataset_kind']=dataset_kind
     df['run_id']=out_dir.name

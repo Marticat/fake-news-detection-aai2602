@@ -17,7 +17,7 @@ from .data import prepare_data,create_demo,clean_text,json_write
 from .database import create_database,run_queries
 
 
-def run_project(raw_dir='data/raw',runs_dir='runs',demo=False,include_minilm=False,isolated=True,documents=True):
+def run_project(raw_dir='data/raw',runs_dir='runs',demo=False,include_minilm=False,isolated=True,documents=True,include_e5=False):
     kind='synthetic_demo' if demo else 'kaggle'
     if not demo and (Path(raw_dir)/'SYNTHETIC_ONLY.txt').exists():
         raise ValueError('Synthetic fixture cannot be used as a real-data run. Use --demo.')
@@ -29,9 +29,10 @@ def run_project(raw_dir='data/raw',runs_dir='runs',demo=False,include_minilm=Fal
     meta=dict(status='running',dataset_kind=kind,run_id=run.name,created_utc=datetime.now(timezone.utc).isoformat(),
         python=sys.version,platform=platform.platform(),sklearn=sklearn.__version__,pandas=pd.__version__,numpy=np.__version__,
         isolated_workers=isolated,thread_limit=1 if isolated else None,metrics=[],selected_model=None,
+        model_thread_limits={'core':1 if isolated else None,'e5':4},
         limitations=['Text classification, not fact verification.','English only; historical source and topic bias.',
-        'Exact normalized-body deduplication only; near-duplicates may remain.',
-        'One seed and one timing run; no confidence interval or temporal external validation.',
+        'Exact body deduplication and title/prefix family grouping; semantic near-duplicates may remain.',
+        'Main split seed 42; article bootstrap intervals are conditional on fitted models. Separate robustness checks are optional.',
         'Peak RSS sampled every 20 ms; includes data and interpreter. Short peaks can be missed.',
         'All cleaned texts are retained in RAM for batch model training. Ingestion is chunked, training is not out-of-core.'])
     json_write(run/'run.json',meta)
@@ -40,7 +41,7 @@ def run_project(raw_dir='data/raw',runs_dir='runs',demo=False,include_minilm=Fal
         df,data=prepare_data(raw_dir,run,dataset_kind=kind)
         meta['data']=data
         con=create_database(run/'news.db',df)
-        models=['baseline','bow','tfidf','lsa']+(['minilm'] if include_minilm else [])
+        models=['baseline','bow','tfidf','lsa']+(['minilm'] if include_minilm else [])+(['e5'] if include_e5 else [])
         for name in models:
             print(f'Training {name}...',flush=True)
             if isolated:

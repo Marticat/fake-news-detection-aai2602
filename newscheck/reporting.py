@@ -75,7 +75,7 @@ def build_report(run,meta):
     s=styles()
     story=[]
     demo=meta['dataset_kind']=='synthetic_demo'
-    status='SYNTHETIC SOFTWARE VALIDATION - NOT KAGGLE RESEARCH RESULTS' if demo else 'EMPIRICAL RUN - LOCAL KAGGLE CSV INPUT'
+    status='SYNTHETIC SOFTWARE VALIDATION - NOT KAGGLE RESEARCH RESULTS' if demo else 'EMPIRICAL RUN - LOCAL ISOT CSV INPUT'
     data=meta['data']
     rows=meta['metrics']
     best=next(r for r in rows if r['model']==meta['selected_model'])
@@ -118,13 +118,14 @@ def build_report(run,meta):
     picture('overview.png',490,180)
     page()
     heading('2. Experimental design')
-    p('A stratified 70/15/15 split with random seed 42 is fixed after deduplication. The vocabulary, IDF weights and SVD projection are fitted on train only [3,4]. The validation set selects the method; test labels are used only for final reporting. Subject, date and source are not classifier features.')
+    p('The real-data run uses an approximately 70/15/15 group split with seed 42. Long normalized titles and 80-word body prefixes define duplicate families. Synthetic tests use stratification. The vocabulary, IDF weights and SVD projection are fitted on train only [3,4]. The validation set selects the method; test labels are used only for final reporting. Subject, date and source are not classifier features.')
     table([['Method','Representation','Estimator'],['Baseline','No text features','Most-frequent class'],['BoW','1-2-grams; counts; L2 normalization','Logistic Regression'],['TF-IDF','1-2-grams; sublinear TF; L2','Logistic Regression'],['LSA embeddings','TF-IDF -> SVD, up to 128 dimensions -> L2','Logistic Regression'],['MiniLM (optional)','Frozen all-MiniLM-L6-v2; mean of token chunks','Logistic Regression']],[85,280,125])
     p('The offline vectorizers use max_features=30,000 and min_df=2. All logistic regression models use C=1, liblinear, max_iter=2,000 and seed=42. These settings are fixed in advance rather than optimized against test results. LSA is a learned linear dense embedding, not a pretrained neural representation.')
     p('For the optional MiniLM experiment, each document is tokenized and divided into chunks that fit the encoder. Chunk embeddings are averaged and normalized; only the logistic classifier is trained [5]. The first run requires downloading weights. This run includes: '+', '.join(r['model'].upper() for r in rows)+'.')
+    p('E5 uses frozen multilingual-e5-small, a query prefix, masked mean pooling and L2 normalization. The first 128 tokens yield 384-dimensional vectors; lexical methods use full text. External encoder weights are required for inference.')
     p('Evaluation criteria','Sub2')
     p('Accuracy is the fraction of correct predictions. Fake-class precision = TP/(TP+FP); recall = TP/(TP+FN). F1 = 2PR/(P+R), and macro-F1 averages the F1 values of the two classes. ROC-AUC measures ranking across thresholds. Undefined precision/recall values are set to zero.')
-    p('Each production method runs in a fresh process with one numerical computation thread. Fit time includes representation fitting and classifier training; inference time includes test transformation. RSS is sampled every 20 ms and includes Python, data and libraries. It can miss short peaks. Timing is a single run, not a statistical benchmark. MiniLM first-load/download costs are included in fit time; external encoder weights are excluded from joblib size.')
+    p('Core workers use one numerical computation thread. E5 uses four CPU threads and a 128-token budget. Concurrent work may affect timings. Fit time includes representation fitting and classifier training; inference time includes test transformation. RSS is sampled every 20 ms and includes Python, data and libraries. It can miss short peaks. Timing is a single run, not a statistical benchmark. MiniLM first-load/download costs are included in fit time; external encoder weights are excluded from joblib size.')
     page()
     heading('3. Relational model and SQL')
     picture('er_diagram.png',490,245)
@@ -140,6 +141,8 @@ def build_report(run,meta):
     picture('comparison.png',490,190)
     p(f'Selected method: {best["model"].upper()}, based on validation macro-F1 = {best["validation"]["macro_f1"]:.4f}. Ties use the predefined model order. Test results never determine the selection.')
     p(f'For the selected method, fake-class precision = {best["test"]["precision_fake"]:.4f}, recall = {best["test"]["recall_fake"]:.4f}, ROC-AUC = {best["test"]["roc_auc"]:.4f}; test inference = {best["predict_ms_per_article"]:.3f} ms/article, and the saved classifier file is {best["model_mib"]:.3f} MiB.')
+    if all('macro_f1_ci' in r for r in rows):
+        p('Conditional 95% macro-F1 bootstrap intervals (1,000 stratified article resamples): '+ '; '.join(f"{r['model']}: {r['macro_f1_ci']['low']:.4f}-{r['macro_f1_ci']['high']:.4f}" for r in rows))
     p('The choice of representation should consider error type, runtime, resources and robustness together. A higher score on this split does not prove that a method generalizes to new publishers or future events. The raw per-method JSON files retain additional metrics and confusion matrices.')
     page()
     heading('5. Error analysis')
@@ -157,10 +160,10 @@ def build_report(run,meta):
             p(f'<b>Article {r.article_id} / {escape(r.error_type)}</b>: {escape(str(r.title)[:170])}<br/>Actual={r.label}, predicted={r.predicted}, fake score={r.probability_fake:.3f}.<br/>{escape(str(r.text)[:240])}...','Small2')
     p('Reusable analysis outputs','Sub2')
     p('errors_*.csv stores mistakes, labels, scores and text; length_errors_*.csv reports error rates for four length ranges. SQL query 08 measures category error rates. terms_bow.csv and terms_tfidf.csv list strongly weighted features; coefficients describe model association, not causal evidence.')
-    p('Manual review should check source-specific phrases, sensational language, quotations, mixed factual/opinion content and unusually short text. Removing Reuters markers alone cannot remove all publisher signals. Future experiments should group near-duplicates and use a later-period or external-source test set.')
+    p('Manual review should check source-specific phrases, sensational language, quotations, mixed factual/opinion content and unusually short text. Removing Reuters markers alone cannot remove all publisher signals. Detected title/prefix families are already isolated. Run newscheck.robustness for repeated grouped splits and a later-period holdout; an independent external-source test remains future work.')
     page()
     heading('6. Reproducibility, limitations and team')
-    p('The command python main.py run --raw data/raw creates a fresh run directory, saves file hashes, records package versions, fits all offline methods and generates every table and figure. The optional --include-minilm flag adds the pretrained encoder. Failed runs retain status=failed and are rejected for inference/reporting.')
+    p('The command python main.py run --raw data/raw creates a fresh run directory, saves file hashes, records package versions, fits all offline methods and generates every table and figure. The --include-e5 flag adds frozen neural embeddings; --include-minilm remains an alternative. Failed runs retain status=failed and are rejected for inference/reporting.')
     p('Software validation covers required CSV columns, blank bodies, duplicates across chunks, conflicting labels, deterministic splits, train-only vocabulary, SQL foreign keys, all analytical queries and end-to-end training/prediction. A synthetic fixture is used for software tests only; the actual test output is recorded separately in the delivered validation log.')
     p('Limits of inference','Sub2')
     for text in meta['limitations']:
@@ -243,7 +246,7 @@ def build_slides(run,meta):
     start('Remove leakage before training')
     lines(['Normalize text and remove explicit Reuters markers.',
            'Deduplicate normalized bodies; exclude conflicting labels.',
-           'Stratified train / validation / test: 70% / 15% / 15%.',
+           'Real data: grouped train / validation / test, approximately 70% / 15% / 15%.',
            'Fit vocabulary, IDF and SVD on train only. Keep metadata out of features.'],size=22)
     end()
     start('Four representations, one comparison')

@@ -52,14 +52,17 @@ def train_worker(run_dir,model_name):
         start=time.perf_counter()
         model.fit(train.clean_text.tolist(),train.label.to_numpy())
         fit_seconds=time.perf_counter()-start
-        val_proba=model.predict_proba(val.clean_text.tolist())[:,1]
-        val_pred=model.classes_[np.argmax(model.predict_proba(val.clean_text.tolist()),axis=1)]
+        val_probabilities=model.predict_proba(val.clean_text.tolist())
+        val_proba=val_probabilities[:,1]
+        val_pred=model.classes_[np.argmax(val_probabilities,axis=1)]
         validation=evaluate(val.label,val_pred,val_proba)
         start=time.perf_counter()
         probabilities=model.predict_proba(test.clean_text.tolist())
         predict_seconds=time.perf_counter()-start
         predicted=model.classes_[np.argmax(probabilities,axis=1)]
         metrics=evaluate(test.label,predicted,probabilities[:,1])
+        from .validation import bootstrap_f1
+        confidence_interval=bootstrap_f1(test.label,predicted)
         folder=run_dir/'models'
         folder.mkdir(exist_ok=True)
         model_path=folder/f'{model_name}.joblib'
@@ -85,7 +88,7 @@ def train_worker(run_dir,model_name):
             weights=model.named_steps['classifier'].coef_[0]
             order=np.r_[np.argsort(weights)[:20],np.argsort(weights)[-20:]]
             pd.DataFrame({'term':terms[order],'coefficient_toward_fake':weights[order],**tags}).to_csv(run_dir/f'terms_{model_name}.csv',index=False)
-    result=dict(**tags,model=model_name,validation=validation,test=metrics,fit_seconds=fit_seconds,
+    result=dict(**tags,model=model_name,validation=validation,test=metrics,macro_f1_ci=confidence_interval,fit_seconds=fit_seconds,
         predict_seconds=predict_seconds,predict_ms_per_article=1000*predict_seconds/len(test),
         peak_rss_mib=memory.peak/(1024**2),rss_increase_mib=(memory.peak-memory.start)/(1024**2),
         model_mib=model_path.stat().st_size/(1024**2),train_n=len(train),validation_n=len(val),test_n=len(test),

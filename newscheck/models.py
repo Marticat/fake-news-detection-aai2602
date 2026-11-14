@@ -76,4 +76,7 @@ def build_model(name):
         return Pipeline([('vectorizer',TfidfVectorizer(sublinear_tf=True,**common)),('svd',SafeSVD()),('normalize',Normalizer()),('classifier',lr)])
     elif name=='minilm':
         return Pipeline([('embedding',SentenceEmbedding()),('classifier',lr)])
+    elif name=='e5':
+        from .neural import E5Embedding
+        return Pipeline([('embedding',E5Embedding()),('classifier',lr)])
     raise ValueError(f'Unknown model: {name}')
