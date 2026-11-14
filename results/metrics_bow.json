@@ -1,0 +1,62 @@
+{
+  "dataset_kind": "kaggle",
+  "run_id": "20261114T154147Z_kaggle_62b2ee",
+  "artifact_status": "model_complete",
+  "model": "bow",
+  "validation": {
+    "accuracy": 0.9752785515320335,
+    "precision_fake": 0.9781461944235117,
+    "recall_fake": 0.9686567164179104,
+    "macro_f1": 0.9751519522848073,
+    "roc_auc": 0.9964012752815558,
+    "confusion_matrix": [
+      [
+        3006,
+        58
+      ],
+      [
+        84,
+        2596
+      ]
+    ]
+  },
+  "test": {
+    "accuracy": 0.9767118526242614,
+    "precision_fake": 0.9836457917830076,
+    "recall_fake": 0.9636576787807737,
+    "macro_f1": 0.9763740788619101,
+    "roc_auc": 0.9963007605792804,
+    "confusion_matrix": [
+      [
+        3154,
+        41
+      ],
+      [
+        93,
+        2466
+      ]
+    ]
+  },
+  "macro_f1_ci": {
+    "low": 0.9724701829965193,
+    "high": 0.9800792046148016,
+    "repeats": 1000,
+    "seed": 42,
+    "method": "stratified article bootstrap; conditional on fitted model"
+  },
+  "fit_seconds": 34.7135094999976,
+  "predict_seconds": 4.770959999994375,
+  "predict_ms_per_article": 0.8291553701762904,
+  "peak_rss_mib": 1195.5546875,
+  "rss_increase_mib": 1078.1640625,
+  "model_mib": 0.4977731704711914,
+  "train_n": 26815,
+  "validation_n": 5744,
+  "test_n": 5754,
+  "config": {
+    "memory": "None",
+    "steps": "[('vectorizer', CountVectorizer(dtype=<class 'numpy.float32'>, max_features=30000, min_df=2,\n                ngram_range=(1, 2))), ('normalize', Normalizer()), ('classifier', LogisticRegression(max_iter=2000, random_state=42, solver='liblinear'))]",
+    "transform_input": "None",
+    "verbose": "False"
+  }
+}

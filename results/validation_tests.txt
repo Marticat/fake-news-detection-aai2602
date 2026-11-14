@@ -1,0 +1,22 @@
+test_cleaning_removes_source_marker_and_html (test_core.CoreTests) ... ok
+test_data_rejects_invalid_schema (test_core.CoreTests) ... ok
+test_dedup_conflict_and_split (test_core.CoreTests) ... ok
+test_models_do_not_learn_test_vocabulary (test_core.CoreTests) ... ok
+test_sql_foreign_keys_and_queries (test_core.CoreTests) ... ok
+test_bootstrap_bounds_and_reproducibility (test_validation.ValidationTests) ... ok
+test_fingerprinted_encoder_cannot_fall_back_unverified (test_validation.ValidationTests) ... ok
+test_groups_never_cross_partitions (test_validation.ValidationTests) ... ok
+test_neural_serialization_keeps_fitted_identity (test_validation.ValidationTests) ... ok
+test_temporal_excludes_families_with_unknown_dates (test_validation.ValidationTests) ... ok
+Training baseline...
+Training bow...
+Training tfidf...
+Training lsa...
+Completed: C:\Users\ARYSLAN Kurmetov\AppData\Local\Packages\OpenAI.Codex_2p2nqsd0c76g0\AC\#!sandbox.{ca377db5-c81b-40e9-920a-fbe212b978ed}\Temp\tmp4vw69gd3\runs\20261114T155843Z_synthetic_demo_3beb82
+test_demo_run_and_prediction (test_workflow.WorkflowTests) ... ok
+test_menu_survives_failed_worker (test_workflow.WorkflowTests) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 13.461s
+
+OK

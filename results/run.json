@@ -1,0 +1,394 @@
+{
+  "status": "complete",
+  "dataset_kind": "kaggle",
+  "run_id": "20261114T154147Z_kaggle_62b2ee",
+  "created_utc": "2026-11-14T15:41:47.314550+00:00",
+  "python": "3.10.3 (tags/v3.10.3:a342a49, Mar 16 2022, 13:07:40) [MSC v.1929 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "sklearn": "1.7.2",
+  "pandas": "2.2.3",
+  "numpy": "1.26.4",
+  "isolated_workers": true,
+  "thread_limit": 1,
+  "metrics": [
+    {
+      "dataset_kind": "kaggle",
+      "run_id": "20261114T154147Z_kaggle_62b2ee",
+      "artifact_status": "model_complete",
+      "model": "baseline",
+      "validation": {
+        "accuracy": 0.5334261838440112,
+        "precision_fake": 0.0,
+        "recall_fake": 0.0,
+        "macro_f1": 0.3478655767484105,
+        "roc_auc": 0.5,
+        "confusion_matrix": [
+          [
+            3064,
+            0
+          ],
+          [
+            2680,
+            0
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.5552659019812305,
+        "precision_fake": 0.0,
+        "recall_fake": 0.0,
+        "macro_f1": 0.3570231310760979,
+        "roc_auc": 0.5,
+        "confusion_matrix": [
+          [
+            3195,
+            0
+          ],
+          [
+            2559,
+            0
+          ]
+        ]
+      },
+      "macro_f1_ci": {
+        "low": 0.3570231310760979,
+        "high": 0.3570231310760979,
+        "repeats": 1000,
+        "seed": 42,
+        "method": "stratified article bootstrap; conditional on fitted model"
+      },
+      "fit_seconds": 0.0018352999904891476,
+      "predict_seconds": 0.0003591999993659556,
+      "predict_ms_per_article": 6.242613822835516e-05,
+      "peak_rss_mib": 551.8046875,
+      "rss_increase_mib": 434.53515625,
+      "model_mib": 0.00038623809814453125,
+      "train_n": 26815,
+      "validation_n": 5744,
+      "test_n": 5754,
+      "config": {
+        "constant": "None",
+        "random_state": "None",
+        "strategy": "most_frequent"
+      }
+    },
+    {
+      "dataset_kind": "kaggle",
+      "run_id": "20261114T154147Z_kaggle_62b2ee",
+      "artifact_status": "model_complete",
+      "model": "bow",
+      "validation": {
+        "accuracy": 0.9752785515320335,
+        "precision_fake": 0.9781461944235117,
+        "recall_fake": 0.9686567164179104,
+        "macro_f1": 0.9751519522848073,
+        "roc_auc": 0.9964012752815558,
+        "confusion_matrix": [
+          [
+            3006,
+            58
+          ],
+          [
+            84,
+            2596
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.9767118526242614,
+        "precision_fake": 0.9836457917830076,
+        "recall_fake": 0.9636576787807737,
+        "macro_f1": 0.9763740788619101,
+        "roc_auc": 0.9963007605792804,
+        "confusion_matrix": [
+          [
+            3154,
+            41
+          ],
+          [
+            93,
+            2466
+          ]
+        ]
+      },
+      "macro_f1_ci": {
+        "low": 0.9724701829965193,
+        "high": 0.9800792046148016,
+        "repeats": 1000,
+        "seed": 42,
+        "method": "stratified article bootstrap; conditional on fitted model"
+      },
+      "fit_seconds": 34.7135094999976,
+      "predict_seconds": 4.770959999994375,
+      "predict_ms_per_article": 0.8291553701762904,
+      "peak_rss_mib": 1195.5546875,
+      "rss_increase_mib": 1078.1640625,
+      "model_mib": 0.4977731704711914,
+      "train_n": 26815,
+      "validation_n": 5744,
+      "test_n": 5754,
+      "config": {
+        "memory": "None",
+        "steps": "[('vectorizer', CountVectorizer(dtype=<class 'numpy.float32'>, max_features=30000, min_df=2,\n                ngram_range=(1, 2))), ('normalize', Normalizer()), ('classifier', LogisticRegression(max_iter=2000, random_state=42, solver='liblinear'))]",
+        "transform_input": "None",
+        "verbose": "False"
+      }
+    },
+    {
+      "dataset_kind": "kaggle",
+      "run_id": "20261114T154147Z_kaggle_62b2ee",
+      "artifact_status": "model_complete",
+      "model": "tfidf",
+      "validation": {
+        "accuracy": 0.987116991643454,
+        "precision_fake": 0.9883808095952024,
+        "recall_fake": 0.983955223880597,
+        "macro_f1": 0.987055467172117,
+        "roc_auc": 0.9986691867035579,
+        "confusion_matrix": [
+          [
+            3033,
+            31
+          ],
+          [
+            43,
+            2637
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.9873131734445603,
+        "precision_fake": 0.9920823436262867,
+        "recall_fake": 0.9792887846815163,
+        "macro_f1": 0.9871393227785287,
+        "roc_auc": 0.9983106663951403,
+        "confusion_matrix": [
+          [
+            3175,
+            20
+          ],
+          [
+            53,
+            2506
+          ]
+        ]
+      },
+      "macro_f1_ci": {
+        "low": 0.9841436879097476,
+        "high": 0.9897848623717403,
+        "repeats": 1000,
+        "seed": 42,
+        "method": "stratified article bootstrap; conditional on fitted model"
+      },
+      "fit_seconds": 31.08157690000371,
+      "predict_seconds": 6.771174399997108,
+      "predict_ms_per_article": 1.1767769204026952,
+      "peak_rss_mib": 1188.015625,
+      "rss_increase_mib": 1070.65625,
+      "model_mib": 0.5524206161499023,
+      "train_n": 26815,
+      "validation_n": 5744,
+      "test_n": 5754,
+      "config": {
+        "memory": "None",
+        "steps": "[('vectorizer', TfidfVectorizer(dtype=<class 'numpy.float32'>, max_features=30000, min_df=2,\n                ngram_range=(1, 2), sublinear_tf=True)), ('classifier', LogisticRegression(max_iter=2000, random_state=42, solver='liblinear'))]",
+        "transform_input": "None",
+        "verbose": "False"
+      }
+    },
+    {
+      "dataset_kind": "kaggle",
+      "run_id": "20261114T154147Z_kaggle_62b2ee",
+      "artifact_status": "model_complete",
+      "model": "lsa",
+      "validation": {
+        "accuracy": 0.9865947075208914,
+        "precision_fake": 0.9858156028368794,
+        "recall_fake": 0.9854477611940299,
+        "macro_f1": 0.9865342118392485,
+        "roc_auc": 0.9986394723510386,
+        "confusion_matrix": [
+          [
+            3026,
+            38
+          ],
+          [
+            39,
+            2641
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.9857490441432047,
+        "precision_fake": 0.9874065328610783,
+        "recall_fake": 0.980461117624072,
+        "macro_f1": 0.9855625321289565,
+        "roc_auc": 0.9983893111611356,
+        "confusion_matrix": [
+          [
+            3163,
+            32
+          ],
+          [
+            50,
+            2509
+          ]
+        ]
+      },
+      "macro_f1_ci": {
+        "low": 0.9823930824453012,
+        "high": 0.9885552757864443,
+        "repeats": 1000,
+        "seed": 42,
+        "method": "stratified article bootstrap; conditional on fitted model"
+      },
+      "fit_seconds": 59.87451109998801,
+      "predict_seconds": 4.121531699987827,
+      "predict_ms_per_article": 0.7162898331574256,
+      "peak_rss_mib": 1197.48046875,
+      "rss_increase_mib": 1079.45703125,
+      "model_mib": 14.082688331604004,
+      "train_n": 26815,
+      "validation_n": 5744,
+      "test_n": 5754,
+      "config": {
+        "memory": "None",
+        "steps": "[('vectorizer', TfidfVectorizer(dtype=<class 'numpy.float32'>, max_features=30000, min_df=2,\n                ngram_range=(1, 2), sublinear_tf=True)), ('svd', SafeSVD()), ('normalize', Normalizer()), ('classifier', LogisticRegression(max_iter=2000, random_state=42, solver='liblinear'))]",
+        "transform_input": "None",
+        "verbose": "False"
+      }
+    },
+    {
+      "dataset_kind": "kaggle",
+      "run_id": "20261114T154147Z_kaggle_62b2ee",
+      "artifact_status": "model_complete",
+      "model": "e5",
+      "validation": {
+        "accuracy": 0.9482938718662952,
+        "precision_fake": 0.9457538346427236,
+        "recall_fake": 0.9432835820895522,
+        "macro_f1": 0.9480531676362728,
+        "roc_auc": 0.9898510872530297,
+        "confusion_matrix": [
+          [
+            2919,
+            145
+          ],
+          [
+            152,
+            2528
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.9506430309350017,
+        "precision_fake": 0.9424348502528199,
+        "recall_fake": 0.9468542399374755,
+        "macro_f1": 0.9500556554970576,
+        "roc_auc": 0.9887667632297192,
+        "confusion_matrix": [
+          [
+            3047,
+            148
+          ],
+          [
+            136,
+            2423
+          ]
+        ]
+      },
+      "macro_f1_ci": {
+        "low": 0.9441141154982798,
+        "high": 0.9556803875267808,
+        "repeats": 1000,
+        "seed": 42,
+        "method": "stratified article bootstrap; conditional on fitted model"
+      },
+      "fit_seconds": 1204.7263552999939,
+      "predict_seconds": 160.9851755000127,
+      "predict_ms_per_article": 27.97795889816001,
+      "peak_rss_mib": 1041.39453125,
+      "rss_increase_mib": 923.0859375,
+      "model_mib": 0.004122734069824219,
+      "train_n": 26815,
+      "validation_n": 5744,
+      "test_n": 5754,
+      "config": {
+        "memory": "None",
+        "steps": "[('embedding', E5Embedding()), ('classifier', LogisticRegression(max_iter=2000, random_state=42, solver='liblinear'))]",
+        "transform_input": "None",
+        "verbose": "False"
+      },
+      "encoder_revision": "614241f622f53c4eeff9890bdc4f31cfecc418b3",
+      "encoder_fingerprint": {
+        "model.safetensors": "1a55775f53449dac10a2bcbc312469fac40b96d53198c407081a831f81c98477",
+        "config.json": "69137736cab8b8903a07fe8afaafdda25aac55415a12a55d1bffa9f581abf959",
+        "tokenizer.json": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+        "tokenizer_config.json": "a1d6bc8734a6f635dc158508bef000f8e2e5a759c7d92f984b2c86e5ff53425b",
+        "special_tokens_map.json": "d05497f1da52c5e09554c0cd874037a083e1dc1b9cfd48034d1c717f1afc07a7"
+      },
+      "numerical_threads": 4,
+      "encoder_weights_bytes": 470641600
+    }
+  ],
+  "selected_model": "tfidf",
+  "limitations": [
+    "Historical English ISOT corpus; no independent external publisher test.",
+    "Subject-only diagnostic reaches perfect test F1: topic/label confounding persists even though subject is not a text-model feature.",
+    "Detected title/prefix families are isolated; semantic paraphrases may remain.",
+    "E5 truncates at 128 tokens; lexical models use full cleaned text.",
+    "Bootstrap intervals condition on fitted models and resample articles rather than whole families.",
+    "Core models use one thread, E5 four; timings are single observations under concurrent machine activity.",
+    "Chunked ingestion and sparse matrices reduce overhead, but cleaned text remains in RAM.",
+    "44,898 input rows / 116.37 MB is below the recommended volume; instructor exception not yet verified.",
+    "Individual student contributions must be recorded by the team."
+  ],
+  "data": {
+    "dataset_kind": "kaggle",
+    "run_id": "20261114T154147Z_kaggle_62b2ee",
+    "artifact_status": "data_prepared",
+    "raw_rows": 44898,
+    "clean_rows": 38313,
+    "empty_removed": 715,
+    "duplicate_rows": 5870,
+    "conflicting_groups": 0,
+    "invalid_dates": 1,
+    "raw_bytes": 116372816,
+    "volume_threshold_met": false,
+    "seed": 42,
+    "chunksize": 5000,
+    "parquet_written": false,
+    "class_counts": {
+      "0": 20921,
+      "1": 17392
+    },
+    "split_counts": {
+      "train": 26815,
+      "test": 5754,
+      "validation": 5744
+    },
+    "source_files": {
+      "True.csv": {
+        "sha256": "ba0844414a65dc6ae7402b8eee5306da24b6b56488d6767135af466c7dcb2775",
+        "bytes": 53582940
+      },
+      "Fake.csv": {
+        "sha256": "bebf8bcfe95678bf2c732bf413a2ce5f621af0102c82bf08083b2e5d3c693d0c",
+        "bytes": 62789876
+      }
+    }
+  },
+  "source_provenance": {
+    "type": "public_isot_mirror",
+    "url": "https://github.com/emilurosev/isot-fake-news-dataset",
+    "commit": "aa8ca45d9da5a308479c52d121c42f36a1f97e69",
+    "requested_kaggle_archive_byte_verified": false
+  },
+  "model_thread_limits": {
+    "core": 1,
+    "e5": 4
+  },
+  "timing_conditions": "Single observations; robustness workers and other machine activity overlapped. Not a controlled speed benchmark.",
+  "torch": "2.6.0+cpu",
+  "transformers": "4.57.6"
+}

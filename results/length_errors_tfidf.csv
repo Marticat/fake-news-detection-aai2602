@@ -1,0 +1,5 @@
+length_bucket,n,error_rate,dataset_kind,run_id,artifact_status
+1-100,730,0.0013698630136986301,kaggle,20261114T154147Z_kaggle_62b2ee,model_complete
+101-300,1307,0.015302218821729151,kaggle,20261114T154147Z_kaggle_62b2ee,model_complete
+301-1000,3501,0.01342473578977435,kaggle,20261114T154147Z_kaggle_62b2ee,model_complete
+1001+,216,0.023148148148148147,kaggle,20261114T154147Z_kaggle_62b2ee,model_complete
